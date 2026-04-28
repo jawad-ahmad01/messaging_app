@@ -1,0 +1,166 @@
+name: ChatApp DevSecOps Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+
+  # 🔍 JOB 1 — SAST
+  sast:
+    name: 🔍 SAST - Code Scanning
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
+
+  # 📦 JOB 2 — Dependency Scan
+  dependency-scan:
+    name: 📦 Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Scan Backend Dependencies
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: ./backend
+          format: sarif
+          output: backend-dep.sarif
+          severity: CRITICAL,HIGH
+
+      - name: Upload Backend Results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: backend-dep.sarif
+          category: backend-dependencies
+
+      - name: Scan Frontend Dependencies
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: ./frontend
+          format: sarif
+          output: frontend-dep.sarif
+          severity: CRITICAL,HIGH
+
+      - name: Upload Frontend Results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: frontend-dep.sarif
+          category: frontend-dependencies
+
+  # 🐳 JOB 3 — Image Scan
+  image-scan:
+    name: 🐳 Container Image Scanning
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Backend Image
+        run: docker build -t chatapp-backend:test ./backend
+
+      - name: Build Frontend Image
+        run: docker build -t chatapp-frontend:test ./frontend
+
+      - name: Scan Backend Image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: chatapp-backend:test
+          format: sarif
+          output: backend-image.sarif
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      - name: Upload Backend Image Results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: backend-image.sarif
+          category: backend-image
+
+      - name: Scan Frontend Image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: chatapp-frontend:test
+          format: sarif
+          output: frontend-image.sarif
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      - name: Upload Frontend Image Results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: frontend-image.sarif
+          category: frontend-image
+
+  # ☸️ JOB 4 — K8s Scan
+  k8s-scan:
+    name: ☸️ Kubernetes Security Scanning
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Scan Backend Deployment
+        uses: controlplaneio/kubesec-action@master
+        with:
+          filename: k8s/backend/deployment.yml
+          exit-code: "0"
+
+      - name: Scan Frontend Deployment
+        uses: controlplaneio/kubesec-action@master
+        with:
+          filename: k8s/frontend/deployment.yml
+          exit-code: "0"
+
+      - name: Scan Mongo Deployment
+        uses: controlplaneio/kubesec-action@master
+        with:
+          filename: k8s/mongo/deployment.yml
+          exit-code: "0"
+
+      - name: Trivy K8s Misconfiguration Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: config
+          scan-ref: k8s/
+          format: sarif
+          output: k8s.sarif
+          severity: CRITICAL,HIGH
+
+      - name: Upload K8s Results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: k8s.sarif
+          category: kubernetes-misconfig
