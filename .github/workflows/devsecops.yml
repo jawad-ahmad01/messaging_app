@@ -16,6 +16,7 @@ jobs:
       security-events: write
       actions: read
       contents: read
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,8 +31,7 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
-        with:
-          category: "/language:javascript"
+
 
   # 📦 JOB 2 — Dependency Scan
   dependency-scan:
@@ -40,12 +40,13 @@ jobs:
     permissions:
       security-events: write
       contents: read
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Scan Backend Dependencies
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.24.0
         with:
           scan-type: fs
           scan-ref: ./backend
@@ -60,7 +61,7 @@ jobs:
           category: backend-dependencies
 
       - name: Scan Frontend Dependencies
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.24.0
         with:
           scan-type: fs
           scan-ref: ./frontend
@@ -74,6 +75,7 @@ jobs:
           sarif_file: frontend-dep.sarif
           category: frontend-dependencies
 
+
   # 🐳 JOB 3 — Image Scan
   image-scan:
     name: 🐳 Container Image Scanning
@@ -81,6 +83,7 @@ jobs:
     permissions:
       security-events: write
       contents: read
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -92,7 +95,7 @@ jobs:
         run: docker build -t chatapp-frontend:test ./frontend
 
       - name: Scan Backend Image
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.24.0
         with:
           image-ref: chatapp-backend:test
           format: sarif
@@ -107,7 +110,7 @@ jobs:
           category: backend-image
 
       - name: Scan Frontend Image
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.24.0
         with:
           image-ref: chatapp-frontend:test
           format: sarif
@@ -121,6 +124,7 @@ jobs:
           sarif_file: frontend-image.sarif
           category: frontend-image
 
+
   # ☸️ JOB 4 — K8s Scan
   k8s-scan:
     name: ☸️ Kubernetes Security Scanning
@@ -128,30 +132,29 @@ jobs:
     permissions:
       security-events: write
       contents: read
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # ✅ FIXED: Install kubesec manually (more reliable)
+      - name: Install kubesec
+        run: |
+          wget https://github.com/controlplaneio/kubesec/releases/download/v2.11.0/kubesec_linux_amd64.tar.gz
+          tar -xvf kubesec_linux_amd64.tar.gz
+          sudo mv kubesec /usr/local/bin/
+
       - name: Scan Backend Deployment
-        uses: controlplaneio/kubesec-action@master
-        with:
-          filename: k8s/backend/deployment.yml
-          exit-code: "0"
+        run: kubesec scan k8s/backend/deployment.yml
 
       - name: Scan Frontend Deployment
-        uses: controlplaneio/kubesec-action@master
-        with:
-          filename: k8s/frontend/deployment.yml
-          exit-code: "0"
+        run: kubesec scan k8s/frontend/deployment.yml
 
       - name: Scan Mongo Deployment
-        uses: controlplaneio/kubesec-action@master
-        with:
-          filename: k8s/mongo/deployment.yml
-          exit-code: "0"
+        run: kubesec scan k8s/mongo/deployment.yml
 
       - name: Trivy K8s Misconfiguration Scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.24.0
         with:
           scan-type: config
           scan-ref: k8s/
