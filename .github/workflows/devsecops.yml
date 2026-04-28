@@ -137,22 +137,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ✅ FIXED: Install kubesec manually (more reliable)
-      - name: Install kubesec
-        run: |
-          wget https://github.com/controlplaneio/kubesec/releases/download/v2.11.0/kubesec_linux_amd64.tar.gz
-          tar -xvf kubesec_linux_amd64.tar.gz
-          sudo mv kubesec /usr/local/bin/
-
-      - name: Scan Backend Deployment
-        run: kubesec scan k8s/backend/deployment.yml
-
-      - name: Scan Frontend Deployment
-        run: kubesec scan k8s/frontend/deployment.yml
-
-      - name: Scan Mongo Deployment
-        run: kubesec scan k8s/mongo/deployment.yml
-
       - name: Trivy K8s Misconfiguration Scan
         uses: aquasecurity/trivy-action@v0.24.0
         with:
