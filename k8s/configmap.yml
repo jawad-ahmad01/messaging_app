@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chatapp-config
+  namespace: chatapp
+data:
+  port: "5001"  
+  NODE_ENV: "production"
+  MY_CONFIG_MONGO_SERVER: "mongo"
+  
