@@ -1,243 +1,409 @@
-[![Fork Button](https://img.shields.io/github/forks/iemafzalhassan/full-stack_chatApp?style=social)](https://github.com/iemafzalhassan/full-stack_chatApp/fork)
+<div align="center">
 
+# 💬 Full-Stack Realtime Chat App
+### Production-Grade DevOps Deployment on Kubernetes
 
-# Real-Time Chat Application
+[![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/jawad-ahmad01/messaging_app/actions)
+[![Docker](https://img.shields.io/badge/Docker-Hub-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-1.34.0-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)](https://kubernetes.io)
+[![Helm](https://img.shields.io/badge/Helm-Monitoring-0F1689?style=for-the-badge&logo=helm&logoColor=white)](https://helm.sh)
+[![Prometheus](https://img.shields.io/badge/Prometheus-Metrics-E6522C?style=for-the-badge&logo=prometheus&logoColor=white)](https://prometheus.io)
+[![Grafana](https://img.shields.io/badge/Grafana-Dashboards-F46800?style=for-the-badge&logo=grafana&logoColor=white)](https://grafana.com)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Database-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://mongodb.com)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
+<p align="center">
+  A scalable, secure, real-time chat application — fully containerized, orchestrated on Kubernetes,<br/>
+  with automated CI/CD, DevSecOps scanning, and full observability via Prometheus + Grafana.
+</p>
 
-Welcome to the **Full Stack Realtime Chat App** project, where we're building a scalable and secure real-time chat experience using the latest technologies. Whether you're a seasoned developer or a beginner, we invite you to contribute and be a part of this exciting journey!
+</div>
 
-## Table of Contents
+---
 
+## 📸 Project Snapshots
 
-* [Introduction](#introduction)
-* [Features](#features)
-* [Tech Stack](#tech-stack)
-* [Getting Started](#getting-started)
-* [Building the Backend](#building-the-backend)
-* [Running the Application](#running-the-application)
-* [Contributing](#contributing)
-* [Future Plans](#future-plans)
-* [License](#license)
+<table>
+  <tr>
+    <td align="center"><b>🔄 GitHub Actions — DevSecOps Pipeline</b></td>
+    <td align="center"><b>📊 Grafana — K8s Dashboard</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/github-actions.png" alt="GitHub Actions Pipeline" width="100%"/></td>
+    <td><img src="docs/screenshots/grafana-dashboard.png" alt="Grafana Dashboard" width="100%"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>📈 Prometheus — CPU Metrics</b></td>
+    <td align="center"><b>⚙️ kubectl — Running Pods</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/prometheus-metrics.png" alt="Prometheus Metrics" width="100%"/></td>
+    <td><img src="docs/screenshots/kubectl-pods.png" alt="Running Pods" width="100%"/></td>
+  </tr>
+</table>
 
-## 📝 Introduction
+> 📌 **Live cluster:** 1 Node (minikube) · 24 Pods · Workload 17 · Kubernetes v1.34.0
 
-This project aims to provide a real-time chat experience that's both scalable and secure. With a focus on modern technologies, we're building an application that's easy to use and maintain.
+---
+
+## 📋 Table of Contents
+
+- [Overview](#-overview)
+- [Architecture](#-architecture)
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [CI/CD Pipeline](#-cicd-pipeline)
+- [Kubernetes Setup](#-kubernetes-setup)
+- [Monitoring Stack](#-monitoring-stack)
+- [Getting Started](#-getting-started)
+- [Project Structure](#-project-structure)
+- [Contributing](#-contributing)
+- [Author](#-author)
+
+---
+
+## 🌟 Overview
+
+This project is a **production-grade deployment** of a full-stack real-time chat application. Beyond the application itself, the focus is on the complete DevOps lifecycle:
+
+- **Code** is automatically built, tested, scanned, and deployed via **GitHub Actions**
+- **Docker images** are built and pushed to **Docker Hub** on every commit
+- **Kubernetes** pulls those images and orchestrates the deployment with autoscaling
+- **Prometheus + Grafana + AlertManager** (via Helm) provide full observability
+- **DevSecOps** pipeline runs SAST, dependency scanning, container scanning, and K8s security checks — all before anything reaches production
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   GitHub Actions CI/CD                       │
+│  ┌──────────────────────┐   ┌──────────────────────────┐   │
+│  │      cicd.yml         │   │     devsecops.yml         │   │
+│  │  Build · Test · Deploy│   │  SAST · Scan · Gate       │   │
+│  └──────────┬───────────┘   └──────────────────────────┘   │
+└─────────────┼───────────────────────────────────────────────┘
+              ▼
+┌─────────────────────────────┐
+│        Docker Hub            │
+│  docker build → docker push  │
+└─────────────┬───────────────┘
+              │ pull image
+              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   K8s Namespace: chatapp                     │
+│                                                             │
+│   Ingress ──► Frontend (Deployment + HPA + Service)         │
+│           └─► Backend  (Deployment + HPA + VPA + Service)   │
+│                              │                              │
+│               MongoDB (Deployment + VPA + PV + PVC)         │
+│               Mongo Express  (Deployment + Service)         │
+│               ConfigMap · Secret                            │
+└─────────────────────────────────────────────────────────────┘
+              ▼
+┌─────────────────────────────────────────────────────────────┐
+│          Monitoring Stack (Helm)                             │
+│   Prometheus ──► Grafana                                    │
+│   Prometheus ──► AlertManager                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
 
 ## ✨ Features
 
+### Application
+- ⚡ **Real-time messaging** via Socket.io
+- 🔐 **JWT authentication & authorization**
+- 👤 **Profile management** with avatar upload
+- 🟢 **Online/offline status** indicators
+- 🎨 **Modern UI** with React + TailwindCSS + DaisyUI
 
-* **Real-time Messaging**: Send and receive messages instantly using Socket.io 
-* **User Authentication & Authorization**: Securely manage user access with JWT 
-* **Scalable & Secure Architecture**: Built to handle large volumes of traffic and data 
-* **Modern UI Design**: A user-friendly interface crafted with React and TailwindCSS 
-* **Profile Management**: Users can upload and update their profile pictures 
-* **Online Status**: View real-time online/offline status of users 
+### DevOps
+- 🐳 **Dockerized** — frontend, backend, and MongoDB all containerized
+- ☸️ **Kubernetes** — full manifest set per service (Deployment, Service, HPA, VPA, PV/PVC)
+- 🔄 **CI/CD** — automated build → push → deploy on every commit
+- 🔒 **DevSecOps** — SAST, dependency scan, container scan, K8s security scan
+- 📊 **Full observability** — Prometheus metrics, Grafana dashboards, AlertManager alerts
+- 📦 **Helm** — monitoring stack deployed and managed as a Helm chart
+- 🚀 **Autoscaling** — HPA for traffic spikes, VPA for right-sizing pods
 
+---
 
 ## 🛠️ Tech Stack
 
+| Layer | Technology |
+|---|---|
+| **Frontend** | React, TailwindCSS, DaisyUI, Zustand |
+| **Backend** | Node.js, Express, Socket.io |
+| **Database** | MongoDB |
+| **Auth** | JWT |
+| **Containerization** | Docker, Docker Hub |
+| **Orchestration** | Kubernetes (Minikube / K8s v1.34.0) |
+| **CI/CD** | GitHub Actions |
+| **Security** | SAST, Dependency Scan, Container Image Scan, K8s Security Scan |
+| **Monitoring** | Prometheus, Grafana, AlertManager |
+| **Package Manager** | Helm (monitoring stack) |
+| **Ingress** | Nginx Ingress Controller |
+| **Web Server** | Nginx |
 
-* **Backend:** Node.js, Express, MongoDB, Socket.io
-* **Frontend:** React, TailwindCSS
-* **Containerization:** Docker
-* **Orchestration:** Kubernetes (planned)
-* **Web Server:** Nginx
-* **State Management:** Zustand
-* **Authentication:** JWT
-* **Styling Components:** DaisyUI
+---
 
+## 🔄 CI/CD Pipeline
 
-### 🔧 Prerequisites
+Two dedicated GitHub Actions workflows handle the full delivery lifecycle.
 
+### `cicd.yml` — Delivery Pipeline
+```
+Push to master
+      │
+      ▼
+ Build Docker image (frontend + backend)
+      │
+      ▼
+ Run tests
+      │
+      ▼
+ Push versioned image to Docker Hub
+      │
+      ▼
+ Rolling deploy to Kubernetes
+ (pods pull new image automatically)
+```
 
-* **[Node.js](https://nodejs.org/)** (v14 or higher)
-* **[Docker](https://www.docker.com/get-started)** (for containerizing the app)
-* **[Git](https://git-scm.com/downloads)** (to clone the repository)
+### `devsecops.yml` — Security Pipeline
+Runs in parallel on every push. All 4 gates must pass before deploy:
 
+| Step | Tool | Duration |
+|---|---|---|
+| ✅ SAST — Code Scanning | Static analysis | ~1m 25s |
+| ✅ Dependency Vulnerability Scan | CVE check | ~29s |
+| ✅ Container Image Scanning | Image layers | ~59s |
+| ✅ Kubernetes Security Scanning | Manifest audit | ~19s |
 
-### 📝 Environment Configuration
+> Total pipeline duration: **~1m 38s** ✅
 
-Create a `.env` file in the root directory with the following configuration:
+---
 
-```env
-# Database Configuration
+## ☸️ Kubernetes Setup
+
+### Manifest Structure
+```
+k8s/
+├── namespace.yml
+├── configmap.yml
+├── secret.yml
+├── ingress.yml
+├── frontend/
+│   ├── deployment.yml
+│   ├── service.yml
+│   └── hpa.yml
+├── backend/
+│   ├── deployment.yml
+│   ├── service.yml
+│   ├── hpa.yml
+│   └── vpa.yml
+├── mongo/
+│   ├── deployment.yml
+│   ├── service.yml
+│   ├── pv.yml
+│   ├── pvc.yml
+│   └── vpa.yml
+└── mongo-express/
+    ├── deployment.yml
+    └── service.yml
+```
+
+### Live Cluster Status
+```bash
+$ kubectl get nodes
+NAME       STATUS   ROLES           AGE   VERSION
+minikube   Ready    control-plane   28h   v1.34.0
+
+$ kubectl get pods -n chatapp -o wide
+NAME                             READY   STATUS    RESTARTS   AGE
+backend-988b8d69d-clcs9          1/1     Running   0          11h
+frontend-6f4c8cd5cb-7gph8        1/1     Running   0          16h
+mongo-96df897c4-xzsv6            1/1     Running   0          22h
+mongo-express-dd576dd67-tqgwn    1/1     Running   4          23h
+```
+
+### Autoscaling
+- **HPA** on frontend + backend — scales pods horizontally under load
+- **VPA** on backend + MongoDB — right-sizes CPU/memory requests automatically
+
+---
+
+## 📊 Monitoring Stack
+
+Deployed via **Helm** into the `monitoring` namespace.
+
+```bash
+# Install kube-prometheus-stack
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+helm install monitoring prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --create-namespace
+```
+
+### Components
+
+| Component | Role | Port |
+|---|---|---|
+| **Prometheus** | Scrapes metrics from all pods | `9090` |
+| **Grafana** | Dashboards & visualization | `3000` |
+| **AlertManager** | Routes alerts on threshold breach | `9093` |
+
+### Grafana Dashboard Highlights
+- Node Memory & CPU usage (27.8% / 30.0%)
+- Total Pods: **24** · Workload: **17** · Nodes: **1**
+- Namespace breakdown: `chatapp`, `monitoring`, `kube-system`, `ingress-nginx`
+
+### Access Grafana
+```bash
+kubectl port-forward svc/monitoring-grafana 3000:80 -n monitoring
+# Open http://localhost:3000
+# Default: admin / prom-operator
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Docker
+- Kubernetes (Minikube or any K8s cluster)
+- kubectl
+- Helm
+- Git
+
+### 1. Clone the repo
+```bash
+git clone https://github.com/jawad-ahmad01/messaging_app.git
+cd messaging_app
+```
+
+### 2. Configure environment
+```bash
+# Create .env in root
 MONGODB_URI=mongodb://root:admin@mongo:27017/chatApp?authSource=admin&retryWrites=true&w=majority
-
-# JWT Configuration
 JWT_SECRET=your_jwt_secret_key
-
-# Server Configuration
 PORT=5001
 NODE_ENV=production
 ```
 
-> **Note:** 
-> - Replace `your_jwt_secret_key` with a strong secret key
-> - For local development without Docker, change `MONGODB_URI` to `mongodb://localhost:27017/chatApp`
-> - You can use command ```echo "Text what you want" | base64
-
-### Clone the Repository
-
-```bash
-git clone https://github.com/iemafzalhassan/full-stack_chatApp.git
-```
-
-🏗️ Build and Run the Application
-
-Follow these steps to build and run the application:
-
-1. Build & Run the Containers:
-
-```bash
-cd full-stack_chatApp
-```
+### 3. Run with Docker Compose (local dev)
 ```bash
 docker-compose up -d --build
+# App: http://localhost
 ```
 
-2. Access the application in your browser:
-
-```
-http://localhost
-```
----
-
-## 🛠️ Getting Started
-
-Follow these simple steps to get the project up and running on your local Host using docker.
-
+### 4. Deploy to Kubernetes
 ```bash
-git clone https://github.com/iemafzalhassan/full-stack_chatApp.git
+# Create namespace
+kubectl apply -f k8s/namespace.yml
+
+# Apply configs and secrets
+kubectl apply -f k8s/configmap.yml
+kubectl apply -f k8s/secret.yml
+
+# Deploy storage
+kubectl apply -f k8s/mongo/pv.yml
+kubectl apply -f k8s/mongo/pvc.yml
+
+# Deploy services
+kubectl apply -f k8s/mongo/
+kubectl apply -f k8s/backend/
+kubectl apply -f k8s/frontend/
+kubectl apply -f k8s/mongo-express/
+kubectl apply -f k8s/ingress.yml
 ```
 
+### 5. Deploy monitoring stack
 ```bash
-cd full-stack_chatApp
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm install monitoring prometheus-community/kube-prometheus-stack \
+  --namespace monitoring --create-namespace
 ```
-## Create a Docker network:
 
+### 6. Verify everything is running
 ```bash
-docker network create full-stack
+kubectl get pods -n chatapp
+kubectl get pods -n monitoring
+kubectl get ingress -n chatapp
 ```
-
-## 🛠️ Building the Frontend
-
-```bash
-cd frontend
-```
-
-```bash
-docker build -t full-stack_frontend .
-```
-
-### Run the Frontend container:
-
-```bash
-docker run -d --network=full-stack  -p 5173:5173 --name frontend full-stack_frontend:latest
-```
-#### The frontend will now be accessible on port 5173.
-
-
-## Run the MongoDB Container:
-
-```bash
-docker run -d -p 27017:27017 --name mongo mongo:latest
-```
----
-
-## 🛠️ Building the Backend
-
-```bash
-cd backend
-```
-
-### Build the Backend image:
-
-```bash
-docker build -t full-stack_backend .
-```
-
-### Run the Backend container:
-
-```bash
-docker run -d --network=full-stack --add-host=host.docker.internal:host-gateway -p 5001:5001 --env-file .env full-stack_backend
-```
-#### This will build and run the backend container, exposing the backendAPI on port 5001.
-
-`Backend API: http://localhost:5001`
-
-### To Verify the conncetion between backend and databse:
-```bash
-docker-compose logs -f
-```
-
-### Once the backend and frontend containers are running, you can access the application in your browser:
-
-`Frontend: http://localhost`
-
-
-You can now interact with the real-time chat app and start messaging!
 
 ---
 
+## 📁 Project Structure
 
-
-### 🤝 Contributing
-
-
-We welcome contributions from DevOps & Developer of all skill levels! Here's how you can contribute:
-
-**Report bugs:** If you encounter any bugs or issues, please open an issue with detailed information.
-**Suggest features:** Have an idea for a new feature? Open an issue to discuss it with the community.
-**Submit pull requests:** If you have a fix or a feature you'd like to contribute, submit a pull request. Ensure your changes pass any linting or tests, if applicable.
-
-### 🌐 Join the Community
-
-We invite you to join our community of developers and contributors. Let's work together to build an amazing real-time chat application!
-
-* **Star this repository** to show your support
-* **Fork this repository** to contribute to the project
-* **Open an issue** to report bugs or suggest features
-* **Submit a pull request** to contribute code changes
-
-## 🔮 Future Plans
-
-
-This project is evolving, and here are a few exciting things on the horizon:
-
-* [ ] **CI/CD Pipelines:** Implement Continuous Integration and Continuous Deployment pipelines to automate testing and deployment.
-* [ ] **Kubernetes (K8s):** Add Kubernetes manifests for container orchestration to deploy the app on cloud platforms like AWS, GCP, or Azure.
-* [ ] **Feature Expansion:** Add more features like group chats, media sharing, and user status updates.
-* **Stay tuned for updates as we continue to improve and expand this project!**
+```
+messaging_app/
+├── frontend/               # React app
+│   ├── Dockerfile
+│   └── src/
+├── backend/                # Node.js + Express + Socket.io
+│   ├── Dockerfile
+│   └── src/
+├── k8s/                    # Kubernetes manifests
+│   ├── frontend/
+│   ├── backend/
+│   ├── mongo/
+│   ├── mongo-express/
+│   ├── namespace.yml
+│   ├── configmap.yml
+│   ├── secret.yml
+│   └── ingress.yml
+├── .github/
+│   └── workflows/
+│       ├── cicd.yml        # Build · Test · Deploy
+│       └── devsecops.yml   # SAST · Scan · Gate
+├── docker-compose.yml
+└── README.md
+```
 
 ---
 
-## 📚 Project Snapshots:
+## 🤝 Contributing
 
-![Settings](frontend/public/settings.png)
+Contributions are welcome from DevOps engineers and developers of all skill levels.
 
-![chat](frontend/public/chat.png)
+1. Fork the repo
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Commit your changes: `git commit -m 'Add your feature'`
+4. Push to the branch: `git push origin feature/your-feature`
+5. Open a Pull Request
 
-![logout](/frontend/public/logout.png)
+Please ensure your changes pass the DevSecOps pipeline (SAST + vulnerability scans) before submitting.
 
-![Login](/frontend/public/login.png)
+---
 
+## 🔮 Roadmap
 
+- [x] Docker containerization
+- [x] Kubernetes manifests (Deployment, Service, HPA, VPA, PV/PVC)
+- [x] GitHub Actions CI/CD pipeline
+- [x] DevSecOps security scanning pipeline
+- [x] Prometheus + Grafana + AlertManager via Helm
+- [ ] Multi-node cluster deployment (AWS EKS / GCP GKE)
+- [ ] Group chats & media sharing
+- [ ] Horizontal scaling tests under load
+- [ ] ArgoCD for GitOps-based deployments
 
-## 📜 License
+---
 
+## 👨‍💻 Author
 
-This project is licensed under the MIT License. See the LICENSE file for more details.
+**Jawad Ahmad**
+- GitHub: [@jawad-ahmad01](https://github.com/jawad-ahmad01)
+- LinkedIn: [Connect with me](https://linkedin.com/in/jawad-ahmad01)
 
+---
 
+<div align="center">
 
+⭐ **Star this repo** if you found it useful — it helps others discover it!
 
-
-
-
-
-
-
-
-
-
-
+</div>
